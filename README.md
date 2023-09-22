@@ -4,4 +4,4 @@ this is a simple quiz api.
 
 ## Database Design
 
-![Database Design](db-design.png)
+![Database Design](design.png)
