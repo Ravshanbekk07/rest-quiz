@@ -13,21 +13,23 @@ from rest_framework.authtoken.models import Token
 
 class QuizList(APIView):
     authentication_classes=[TokenAuthentication]
+    authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     
     def get(self,request):
         user=request.user
-        quizzes=user.quiz
-        serializer=QuizSerializer(quizzes,many=True)
+        #quiz=user.quiz
+        quiz=Quiz.objects.all()
+        serializer=QuizSerializer(quiz,many=True)
         return Response(serializer.data)
     
     def post(self,request):
         data =request.data
         user=request.user
         serializer = QuizSerializer(data=data)
-        # if not user:
-        #         return Response({'error':'unauthorized'},status =401)
-        if not user.is_superuser:
+        if not user:
+                return Response({'error':'unauthorized'},status =401)
+        elif not user.is_superuser:
                 return Response({'error':'forbidden'},status=403)
            
         elif serializer.is_valid():
@@ -39,12 +41,17 @@ class QuizList(APIView):
 class QuizDetail(APIView):
     authentication_classes=[TokenAuthentication]
     permission_classes=[IsAuthenticated]
+    authentication_classes=[BasicAuthentication]
+    
     def get(self,request,pk:int):
+        user=request.user
         try:
-            user=request.user
-            quiz=user.quiz.get(id=pk)
-            serializer=QuizSerializer(quiz)
-            return Response(serializer.data)
+            if not user:
+                return Response({'error':'unauthorized'},status =401)
+            else:
+                quiz=Quiz.objects.get(id=pk)
+                serializer=QuizSerializer(quiz)
+                return Response(serializer.data)
         except Quiz.DoesNotExist:
             return Response(
             data={'error':'task doesnt exist'},
@@ -52,25 +59,37 @@ class QuizDetail(APIView):
 
 
     def put(self,request,pk:int):
+        user=request.user
         try:
             quiz=Quiz.objects.get(id=pk)    
         except Quiz.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer=QuizSerializer(instance=quiz,data=request.data)
-
-        if serializer.is_valid():
+        if not user:
+                return Response({'error':'unauthorized'},status =401)
+        elif not user.is_superuser:
+                return Response({'error':'forbidden'},status=403)
+           
+        elif serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
     
     def delete(self,request,pk:int):
+        user=request.user
         try:
             quiz=Quiz.objects.get(id=pk)
         except Quiz.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer=QuizSerializer(instance=quiz,data=request.data)
-
-        if serializer.is_valid():
-            serializer.delete()
-            return Response(serializer.data)
+        if not user:
+                return Response({'error':'unauthorized'},status =401)
+        elif not user.is_superuser:
+                return Response({'error':'forbidden'},status=403)
+           
+        elif serializer.is_valid():
+            quiz.delete()
+            return Response({"status":'deleted'})
         return Response(serializer.errors)
+    
+
