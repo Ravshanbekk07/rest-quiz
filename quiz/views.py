@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework.generics import APIView
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .models import Quiz,Question
 from .serializers import QuizSerializer,QuestionSerializer
