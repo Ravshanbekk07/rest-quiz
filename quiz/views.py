@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Quiz,Question,Option
-from .serializers import QuizSerializer,QuestionSerializer,OptionSerializer
+from .models import Quiz,Question,Option,Take
+from .serializers import QuizSerializer,QuestionSerializer,OptionSerializer,TakeSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
@@ -317,7 +317,28 @@ class OptionDetail(APIView):
             return Response({"status":'deleted'})
         
 class TakeList(APIView):
-    pass
+    authentication_classes=[TokenAuthentication]
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request,quiz_id):
+        user=request.user
+        if not user:
+               
+                return Response({'error': 'Unauthorized'}, status=401)
+        if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+        
+        else:
+               
+                    quiz = get_object_or_404(Quiz,id=quiz_id)
+                    takes=Take.objects.filter(quiz=quiz).all()
+                    serializer=TakeSerializer(takes,many=True)
+                    return Response(serializer.data)
+    def post(self,request,quiz_id):
+          
+              
+
 class TakeDetail(APIView):
     pass
 
