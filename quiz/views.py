@@ -81,7 +81,6 @@ class QuizDetail(APIView):
             quiz = get_object_or_404(Quiz,id=pk)
         except Quiz.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        # serializer=QuizSerializer(instance=quiz,data=request.data)
         if not user:
                 return Response({'error':'unauthorized'},status =401)
         elif not user.is_superuser:
@@ -119,12 +118,11 @@ class QuestionList(APIView):
             data=request.data
 
             user=request.user
-            # serializer=QuestionSerializer(quiz=quiz,data=data)
                      
             if not quiz_id:
                     return Response({"error":'quiz id is required'})
             if not user:
-                    # return 401 status code
+                   
                     return Response({'error': 'Unauthorized'}, status=401)
             elif not user.is_superuser:
                 return Response({'error': 'Forbidden'}, status=403)
@@ -142,9 +140,6 @@ class QuestionList(APIView):
                     return Response(serializer.data)
                 else:
                     return Response(serializer.errors)
-        
-                      
-             
          
 class QuestionDetail(APIView):
     authentication_classes=[TokenAuthentication]
@@ -154,7 +149,7 @@ class QuestionDetail(APIView):
 
         user=request.user
         if not user:
-                # return 401 status code
+             
                 return Response({'error': 'Unauthorized'}, status=401)
         if not quiz_id:
                 return Response({"error":'quiz id is required'})
@@ -166,6 +161,42 @@ class QuestionDetail(APIView):
                     serializer=QuestionSerializer(question)
                     return Response(serializer.data)
 
-    def put(self):
-        pass            
+    def put(self,request,quiz_id,pk:int):
+        
+        data=request.data
+        user=request.user
+       
+        quiz=get_object_or_404(Quiz,id=quiz_id)    
+        data['quiz']=quiz.pk
+        question = get_object_or_404(Question,quiz=quiz,id=pk)
+        
+        serializer=QuestionSerializer(question,data=data)
+        if not user:
+                return Response({'error':'unauthorized'},status =401)
+        elif not user.is_superuser:
+                return Response({'error':'forbidden'},status=403)
+           
+        elif serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+    
+
+    def delete(self,request,quiz_id,pk:int):
+        user=request.user
+      
+        quiz = get_object_or_404(Quiz,id=pk)
+        question = get_object_or_404(Question,quiz=quiz,id=pk)
+
+        if not user:
+                return Response({'error':'unauthorized'},status =401)
+        elif not user.is_superuser:
+                return Response({'error':'forbidden'},status=403)
+           
+        else:
+            question.delete()
+            return Response({"status":'deleted'})
+       
+    
+                    
                
