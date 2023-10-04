@@ -253,4 +253,23 @@ class OptionDetail(APIView):
     authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]                        
-    def get(self,request,)
+    def get(self,request,quiz_id,question_id,pk:int):
+           
+        user=request.user
+        if not user:
+                    return Response({'error': 'Unauthorized'}, status=401)
+        if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+        if not question_id:
+                    return Response({"error":'question id is required'})
+                       
+        else:
+                    quiz = get_object_or_404(Quiz,id=quiz_id)
+                    question=get_object_or_404(Question,quiz=quiz,id=question_id)
+                    option=get_object_or_404(Option,question=question,id=pk)
+
+
+                    serializer=OptionSerializer(option)
+                    return Response(serializer.data)
+
+        
