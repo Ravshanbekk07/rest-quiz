@@ -11,6 +11,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         model=Question
         fields="__all__"
 
+    
 class UserSerializer(serializers.Serializer):
     tasks = QuizSerializer(many=True,read_only=True)
     class  Meta:

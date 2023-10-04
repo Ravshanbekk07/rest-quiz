@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
 from rest_framework.authtoken.models import Token
-
+from django.shortcuts import get_object_or_404
 
 
 class QuizList(APIView):
@@ -78,18 +78,94 @@ class QuizDetail(APIView):
     def delete(self,request,pk:int):
         user=request.user
         try:
-            quiz=Quiz.objects.get(id=pk)
+            quiz = get_object_or_404(Quiz,id=pk)
         except Quiz.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer=QuizSerializer(instance=quiz,data=request.data)
+        # serializer=QuizSerializer(instance=quiz,data=request.data)
         if not user:
                 return Response({'error':'unauthorized'},status =401)
         elif not user.is_superuser:
                 return Response({'error':'forbidden'},status=403)
            
-        elif serializer.is_valid():
+        else:
             quiz.delete()
             return Response({"status":'deleted'})
-        return Response(serializer.errors)
+       
     
 
+class QuestionList(APIView):
+    authentication_classes=[TokenAuthentication]
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+    
+    def get(self,request,quiz_id):
+        user=request.user
+        if not user:
+                # return 401 status code
+                return Response({'error': 'Unauthorized'}, status=401)
+        if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+           
+        else:
+                try:
+                    quiz = Quiz.objects.get(id=quiz_id)
+                except Quiz.DoesNotExist:
+                    return Response({"error": "quiz not found."})
+                questions = Question.objects.filter(quiz=quiz).all()
+                serializer=QuestionSerializer(questions,many=True)
+                return Response(serializer.data)
+
+    def post(self,request,quiz_id):
+            data=request.data
+
+            user=request.user
+            # serializer=QuestionSerializer(quiz=quiz,data=data)
+                     
+            if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+            if not user:
+                    # return 401 status code
+                    return Response({'error': 'Unauthorized'}, status=401)
+            elif not user.is_superuser:
+                return Response({'error': 'Forbidden'}, status=403)
+            else:
+                try:
+                    quiz=Quiz.objects.get(id=quiz_id)
+                except Quiz.DoesNotExist:
+                    return Response({'error': 'quiz not found'}, status=401)
+                data['quiz'] = quiz.pk
+                serializer=QuestionSerializer(data=data)
+                
+                if serializer.is_valid():
+                    serializer.save()
+
+                    return Response(serializer.data)
+                else:
+                    return Response(serializer.errors)
+        
+                      
+             
+         
+class QuestionDetail(APIView):
+    authentication_classes=[TokenAuthentication]
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+    def get(self,request,quiz_id,pk:int):
+
+        user=request.user
+        if not user:
+                # return 401 status code
+                return Response({'error': 'Unauthorized'}, status=401)
+        if not quiz_id:
+                return Response({"error":'quiz id is required'})
+           
+        else:
+                
+                    quiz = get_object_or_404(Quiz,id=quiz_id)
+                    question = get_object_or_404(Question,quiz=quiz,id=pk)
+                    serializer=QuestionSerializer(question)
+                    return Response(serializer.data)
+
+    def put(self):
+        pass            
+               
