@@ -272,4 +272,50 @@ class OptionDetail(APIView):
                     serializer=OptionSerializer(option)
                     return Response(serializer.data)
 
+    def put(self,request,quiz_id,question_id,pk):
+            data=request.data
+            user=request.user
+            if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+            if not question_id:
+                    return Response({"error":'question id is required'})
+           
+            if not user:
+                   
+                    return Response({'error': 'Unauthorized'}, status=401)
+            elif not user.is_superuser:
+                return Response({'error': 'Forbidden'}, status=403)
+            else:
+                quiz = get_object_or_404(Quiz,id=quiz_id)
+                question=get_object_or_404(Question,quiz=quiz,id=question_id)
+                option=get_object_or_404(Option,question=question,id=pk)
+
+                data['question'] = question.pk
+                serializer=OptionSerializer(option,data=data)
+                
+                if serializer.is_valid():
+                    serializer.save()
+
+                    return Response(serializer.data)
+                else:
+                    return Response(serializer.errors)
+
+    def delete(self,request,quiz_id,question_id,pk:int):
+        user=request.user
+      
+        quiz = get_object_or_404(Quiz,id=quiz_id)
+        question=get_object_or_404(Question,quiz=quiz,id=question_id)
+        option=get_object_or_404(Option,question=question,id=pk)
+
+        if not user:
+                return Response({'error':'unauthorized'},status =401)
+        elif not user.is_superuser:
+                return Response({'error':'forbidden'},status=403)
+           
+        else:
+            option.delete()
+            return Response({"status":'deleted'})
         
+
+
+
