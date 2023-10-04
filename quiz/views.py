@@ -316,6 +316,8 @@ class OptionDetail(APIView):
             option.delete()
             return Response({"status":'deleted'})
         
-
-
+class TakeList(APIView):
+    pass
+class TakeDetail(APIView):
+    pass
 

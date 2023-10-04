@@ -1,5 +1,8 @@
 from django.urls import path
-from .views import QuizList,QuizDetail,QuestionList,QuestionDetail,OptionList,OptionDetail
+from .views import (QuizList,QuizDetail,
+                    QuestionList,QuestionDetail,
+                    OptionList,OptionDetail,
+                    TakeList,TakeDetail)
 
 urlpatterns = [
     path('quiz/', QuizList.as_view()),
@@ -10,6 +13,9 @@ urlpatterns = [
 
     path('quiz/<int:quiz_id>/question/<int:question_id>/option/',OptionList.as_view()),
     path('quiz/<int:quiz_id>/question/<int:question_id>/option/<int:pk>/',OptionDetail.as_view()),
+    
+    path('quiz/<int:quiz_id>/take/',TakeList.as_view()),
+    path('quiz/<int:quiz_id>/take/<int:pk>/',TakeDetail.as_view()),
     
 
 ]
