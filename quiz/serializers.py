@@ -21,6 +21,8 @@ class TakeSerializer(serializers.ModelSerializer):
         model=Take
         fields="__all__" 
 
+
+
 class UserSerializer(serializers.Serializer):
     tasks = QuizSerializer(many=True,read_only=True)
     class  Meta:

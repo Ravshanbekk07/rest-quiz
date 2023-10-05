@@ -102,7 +102,7 @@ class QuestionList(APIView):
         if not user:
                
                 return Response({'error': 'Unauthorized'}, status=401)
-        if not quiz_id:
+        if not quiz_id :
                     return Response({"error":'quiz id is required'})
            
         else:
@@ -202,12 +202,12 @@ class OptionList(APIView):
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated] 
 
-    def get(self,request,quiz_id,question_id):
+    def get(self,request,quiz_id=None,question_id=None):
         user=request.user
         if not user:
                
                 return Response({'error': 'Unauthorized'}, status=401)
-        if not quiz_id:
+        if quiz_id is None:
                     return Response({"error":'quiz id is required'})
         if not question_id:
                     return Response({"error":'question id is required'})
@@ -328,7 +328,9 @@ class TakeList(APIView):
                 return Response({'error': 'Unauthorized'}, status=401)
         if not quiz_id:
                     return Response({"error":'quiz id is required'})
-        
+        if not user.is_superuser:
+                return Response({'error':'forbidden'},status =401)
+                 
         else:
                
                     quiz = get_object_or_404(Quiz,id=quiz_id)
@@ -336,9 +338,91 @@ class TakeList(APIView):
                     serializer=TakeSerializer(takes,many=True)
                     return Response(serializer.data)
     def post(self,request,quiz_id):
-          
+            data=request.data
+            user=request.user
+            if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+            
+            if not user:
+                   
+                    return Response({'error': 'Unauthorized'}, status=401)
+            elif not user.is_superuser:
+                return Response({'error': 'Forbidden'}, status=403)
+            else:
+                quiz = get_object_or_404(Quiz,id=quiz_id)
+               
+                data['quiz'] = quiz.pk
+                serializer=TakeSerializer(data=data)
+                
+                if serializer.is_valid():
+                    serializer.save()
+
+                    return Response(serializer.data)
+                else:
+                    return Response(serializer.errors)
+            
               
 
 class TakeDetail(APIView):
-    pass
+    authentication_classes=[TokenAuthentication]
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+    def get(self,request,quiz_id,pk):
+        user=request.user
+        if not user:
+            return Response({'error': 'Unauthorized'}, status=401)
+        if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+        if not user.is_superuser:
+                return Response({'error':'forbidden'},status =401)
+                 
+        else:
+                    quiz = get_object_or_404(Quiz,id=quiz_id)
+                    take=get_object_or_404(Take,quiz=quiz,id=pk)
+                    serializer=TakeSerializer(take)
+                    return Response(serializer.data) 
+    def put(self,request,quiz_id,pk):
+            data=request.data
+            user=request.user
+            if not quiz_id:
+                    return Response({"error":'quiz id is required'})
+            
+            if not user:
+                   
+                    return Response({'error': 'Unauthorized'}, status=401)
+            elif not user.is_superuser:
+                return Response({'error': 'Forbidden'}, status=403)
+            else:
+                quiz = get_object_or_404(Quiz,id=quiz_id)
+                take=get_object_or_404(Take,quiz=quiz,id=pk)
 
+                data['quiz']=quiz.pk
+                data['user'] = take.pk
+                serializer=TakeSerializer(data=data)
+                
+                if serializer.is_valid():
+                    serializer.save()
+
+                    return Response(serializer.data)
+                else:
+                    return Response(serializer.errors)
+
+    def delete(self,request,quiz_id,pk):       
+        user=request.user
+        quiz = get_object_or_404(Quiz,id=quiz_id)
+        take=get_object_or_404(Take,quiz=quiz,id=pk)
+        
+        if not user:
+                return Response({'error':'unauthorized'},status =401)
+        elif not user.is_superuser:
+                return Response({'error':'forbidden'},status=403)
+           
+        else:
+            take.delete()
+            return Response({"status":'deleted'})
+class ResponseList(APIView):
+    def get(self):
+          pass                 
+class ResponseDetail(APIView):
+    def get(self):
+        pass
