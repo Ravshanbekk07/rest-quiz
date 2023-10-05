@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from .models import Quiz,Question,Option,Take
-from .serializers import QuizSerializer,QuestionSerializer,OptionSerializer,TakeSerializer
+from .models import Quiz,Question,Option,Take,Responses
+from .serializers import QuizSerializer,QuestionSerializer,OptionSerializer,TakeSerializer,ResponseSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication,TokenAuthentication
@@ -421,8 +421,50 @@ class TakeDetail(APIView):
             take.delete()
             return Response({"status":'deleted'})
 class ResponseList(APIView):
-    def get(self):
-          pass                 
+    authentication_classes=[TokenAuthentication]
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+    def post(self,request,take_id):
+            data=request.data
+            user=request.user
+            if not take_id:
+                    return Response({"error":'quiz id is required'})
+            
+            if not user:
+                   
+                    return Response({'error': 'Unauthorized'}, status=401)
+            elif not user.is_superuser:
+                return Response({'error': 'Forbidden'}, status=403)
+            else:
+                take=get_object_or_404(Take,id=take_id)
+               
+                data['take'] = take.pk
+                serializer=ResponseSerializer(data=data)
+                
+                if serializer.is_valid():
+                    serializer.save()
+
+                    return Response(serializer.data)
+                else:
+                    return Response(serializer.errors)
+                             
 class ResponseDetail(APIView):
-    def get(self):
-        pass
+    authentication_classes=[TokenAuthentication]
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+    def get(self,request,take_id):
+        user=request.user
+        if not user:
+            return Response({'error': 'Unauthorized'}, status=401)
+        if not take_id:
+                    return Response({"error":'quiz id is required'})
+        if not user.is_superuser:
+                return Response({'error':'forbidden'},status =401)
+                 
+        else:
+                    
+                    take=get_object_or_404(Take,id=take_id)
+                    result=get_object_or_404(Responses,take=take)
+                    serializer=ResponseSerializer(result)
+                    return Response(serializer.data) 
+   

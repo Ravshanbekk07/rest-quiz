@@ -1,4 +1,4 @@
-from .models import Quiz,Question,Option,Take
+from .models import Quiz,Question,Option,Take,Responses
 from rest_framework import serializers
 from django.contrib.auth.models import User
 class QuizSerializer(serializers.ModelSerializer):
@@ -21,6 +21,10 @@ class TakeSerializer(serializers.ModelSerializer):
         model=Take
         fields="__all__" 
 
+class ResponseSerializer(serializers.ModelSerializer):
+     class Meta:
+        model=Responses
+        fields="__all__" 
 
 
 class UserSerializer(serializers.Serializer):

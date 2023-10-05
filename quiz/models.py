@@ -31,7 +31,7 @@ class Take(models.Model):
     def __str__(self):
         return self.user.username + ' - ' + self.quiz.name
 
-class Response(models.Model):
+class Responses(models.Model):
     take = models.ForeignKey(Take, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     option = models.ForeignKey(Option, on_delete=models.CASCADE)
