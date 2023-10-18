@@ -12,7 +12,6 @@ from django.shortcuts import get_object_or_404
 
 
 class QuizList(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     
@@ -39,7 +38,6 @@ class QuizList(APIView):
             return Response(serializer.errors)
         
 class QuizDetail(APIView):
-    authentication_classes=[TokenAuthentication]
     permission_classes=[IsAuthenticated]
     authentication_classes=[BasicAuthentication]
     
@@ -93,7 +91,6 @@ class QuizDetail(APIView):
     
 
 class QuestionList(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     
@@ -142,7 +139,6 @@ class QuestionList(APIView):
                     return Response(serializer.errors)
          
 class QuestionDetail(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     def get(self,request,quiz_id,pk:int):
@@ -198,7 +194,6 @@ class QuestionDetail(APIView):
             return Response({"status":'deleted'})
 
 class OptionList(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated] 
 
@@ -250,7 +245,6 @@ class OptionList(APIView):
             
     
 class OptionDetail(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]                        
     def get(self,request,quiz_id,question_id,pk:int):
@@ -258,10 +252,7 @@ class OptionDetail(APIView):
         user=request.user
         if not user:
                     return Response({'error': 'Unauthorized'}, status=401)
-        if not quiz_id:
-                    return Response({"error":'quiz id is required'})
-        if not question_id:
-                    return Response({"error":'question id is required'})
+       
                        
         else:
                     quiz = get_object_or_404(Quiz,id=quiz_id)
@@ -317,7 +308,6 @@ class OptionDetail(APIView):
             return Response({"status":'deleted'})
         
 class TakeList(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
 
@@ -364,7 +354,6 @@ class TakeList(APIView):
               
 
 class TakeDetail(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     def get(self,request,quiz_id,pk):
@@ -421,7 +410,6 @@ class TakeDetail(APIView):
             take.delete()
             return Response({"status":'deleted'})
 class ResponseList(APIView):
-    authentication_classes=[TokenAuthentication]
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     def post(self,request,take_id):
@@ -449,15 +437,13 @@ class ResponseList(APIView):
                     return Response(serializer.errors)
                              
 class ResponseDetail(APIView):
-    authentication_classes=[TokenAuthentication]
-    authentication_classes=[BasicAuthentication]
+    authentication_classes=[BasicAuthentication ]
     permission_classes=[IsAuthenticated]
     def get(self,request,take_id):
         user=request.user
         if not user:
             return Response({'error': 'Unauthorized'}, status=401)
-        if not take_id:
-                    return Response({"error":'quiz id is required'})
+        
         if not user.is_superuser:
                 return Response({'error':'forbidden'},status =401)
                  
