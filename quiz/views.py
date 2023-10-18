@@ -43,25 +43,21 @@ class QuizDetail(APIView):
     
     def get(self,request,pk:int):
         user=request.user
-        try:
-            if not user:
+        
+        if not user:
                 return Response({'error':'unauthorized'},status =401)
-            else:
-                quiz=Quiz.objects.get(id=pk)
+        else:
+                quiz=get_object_or_404(Quiz,id=pk)
                 serializer=QuizSerializer(quiz)
                 return Response(serializer.data)
-        except Quiz.DoesNotExist:
-            return Response(
-            data={'error':'task doesnt exist'},
-            status=status.HTTP_404_NOT_FOUND)
+        
 
 
     def put(self,request,pk:int):
         user=request.user
-        try:
-            quiz=Quiz.objects.get(id=pk)    
-        except Quiz.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        quiz=get_object_or_404(Quiz,id=pk)    
+        
         serializer=QuizSerializer(instance=quiz,data=request.data)
         if not user:
                 return Response({'error':'unauthorized'},status =401)
@@ -75,10 +71,9 @@ class QuizDetail(APIView):
     
     def delete(self,request,pk:int):
         user=request.user
-        try:
-            quiz = get_object_or_404(Quiz,id=pk)
-        except Quiz.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        
+        quiz = get_object_or_404(Quiz,id=pk)
+        
         if not user:
                 return Response({'error':'unauthorized'},status =401)
         elif not user.is_superuser:
